@@ -55,10 +55,20 @@ public class JwtFilter implements Filter {
                 return;
             }
 
+            /*
+            닉네임 가져오고 검증
+            */
+            String nickname = jwtUtil.getNicknameFromToken(jwt);
+            if (nickname == null) {
+                httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "jwt에 닉네임 정보가 없습니다.");
+                return;
+            }
+
             UserRole userRole = UserRole.valueOf(claims.get("userRole", String.class));
 
             httpRequest.setAttribute("userId", Long.parseLong(claims.getSubject()));
             httpRequest.setAttribute("email", claims.get("email"));
+            httpRequest.setAttribute("nickname", claims.get("nickname"));
             httpRequest.setAttribute("userRole", claims.get("userRole"));
 
             if (url.startsWith("/admin")) {
