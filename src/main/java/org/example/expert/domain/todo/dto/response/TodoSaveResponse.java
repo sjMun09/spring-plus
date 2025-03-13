@@ -1,5 +1,6 @@
 package org.example.expert.domain.todo.dto.response;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.example.expert.domain.user.dto.response.UserResponse;
 
@@ -19,4 +20,5 @@ public class TodoSaveResponse {
         this.weather = weather;
         this.user = user;
     }
+
 }

@@ -1,5 +1,6 @@
 package org.example.expert.domain.common.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.example.expert.domain.user.enums.UserRole;
 
@@ -15,4 +16,5 @@ public class AuthUser {
         this.email = email;
         this.userRole = userRole;
     }
+
 }
