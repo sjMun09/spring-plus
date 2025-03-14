@@ -12,7 +12,8 @@ import org.example.expert.domain.user.entity.User;
 @Table(name = "managers")
 public class Manager {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,6 +25,10 @@ public class Manager {
 
     public Manager(User user, Todo todo) {
         this.user = user;
+        this.todo = todo;
+    }
+
+    public void setTodo(Todo todo) {
         this.todo = todo;
     }
 }

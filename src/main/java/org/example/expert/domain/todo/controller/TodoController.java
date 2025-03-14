@@ -31,6 +31,7 @@ public class TodoController {
         return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
     }
 
+    // 참고해서 검색 부분 구현.
     @GetMapping("/todos")
     public ResponseEntity<Page<TodoResponse>> getTodos(
             @RequestParam(defaultValue = "1") int page,
