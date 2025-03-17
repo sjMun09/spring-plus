@@ -11,6 +11,5 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Long>, TodoRepositoryQueryDsl {
-
-    Page<Todo> findAllByOrderByModifiedAtDesc(Pageable pageable);
+    Page<Todo> searchTodos(Long userId, String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 }

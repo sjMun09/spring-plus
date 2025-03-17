@@ -1,6 +1,7 @@
 package org.example.expert.domain.todo.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.client.WeatherClient;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class TodoService {
 
@@ -29,9 +31,16 @@ public class TodoService {
 
     @Transactional
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
+        log.debug("TodoService 에 AuthUser : {}", authUser);
+        if (authUser == null) {
+            throw new InvalidRequestException("인증되지않은 사용자");
+        }
+
         User user = User.fromAuthUser(authUser);
+        log.debug("TodoService User 객체 : {}", user);
 
         String weather = weatherClient.getTodayWeather();
+        log.debug("TodoService weather : {}", weather);
 
         Todo newTodo = new Todo(
                 todoSaveRequest.getTitle(),
@@ -40,6 +49,7 @@ public class TodoService {
                 user
         );
         Todo savedTodo = todoRepository.save(newTodo);
+        log.debug("todoService 저장된 todo: {}", savedTodo);
 
         return new TodoSaveResponse(
                 savedTodo.getId(),
@@ -50,10 +60,12 @@ public class TodoService {
         );
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        Page<Todo> todos = todoRepository.findAllByUserIdOrderByModifiedAtDesc(userId, pageable);
+
+        log.info("getTodos() 실행됨. userId: {}, page: {}, size: {}", userId, page, size);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
@@ -66,9 +78,15 @@ public class TodoService {
         ));
     }
 
-    public TodoResponse getTodo(long todoId) {
+    public TodoResponse getTodo(Long userId, long todoId) {
         Todo todo = todoRepository.findByIdWithUser(todoId)
                 .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+
+        log.info("getTodo() 실행됨. userId: {}, todoId: {}", userId, todoId);
+
+        if (!todo.getUser().getId().equals(userId)) {
+            throw new InvalidRequestException("죄송합니다. 해당 todo에 대한 권한이 없습니다.");
+        }
 
         User user = todo.getUser();
 
@@ -84,9 +102,11 @@ public class TodoService {
     }
 
     // 검색 기능 추가. 날씨, 날짜 기준 필터링 가능
-    public Page<TodoResponse> searchTodos(String weather, LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
+    public Page<TodoResponse> searchTodos(Long userId, String weather, LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Todo> todos = todoRepository.searchTodos(weather, startDate, endDate, pageable);
+        Page<Todo> todos = todoRepository.searchTodos(userId, weather, startDate, endDate, pageable);
+
+        log.info("searchTodos() 실행됨. userId: {}, weather: {}, startDate: {}, endDate: {}", userId, weather, startDate, endDate);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),

@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SigninRequest {
 
-    @NotBlank
+    @NotBlank(message = "이메일 입력해주세요")
     @Email
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "비번 일벽해주세요")
     private String password;
 
-    @NotBlank
+    @NotBlank(message = "닉네임 입력해주세요")
     @Size(min = 2, max = 8)
     private String nickname;
 }

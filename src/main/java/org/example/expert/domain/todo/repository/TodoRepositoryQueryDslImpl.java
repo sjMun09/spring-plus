@@ -37,12 +37,13 @@ public class TodoRepositoryQueryDslImpl implements TodoRepositoryQueryDsl {
     }
 
     @Override
-    public Page<Todo> searchTodos(String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+    public Page<Todo> searchTodos(Long userId, String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
         QTodo todo = QTodo.todo;
 
         List<Todo> results = queryFactory
                 .selectFrom(todo)
                 .where(
+                        todo.user.id.eq(userId),
                         weatherEq(weather),
                         startDateGoe(startDate),
                         endDateLoe(endDate)
@@ -56,6 +57,7 @@ public class TodoRepositoryQueryDslImpl implements TodoRepositoryQueryDsl {
                 .select(todo.count())
                 .from(todo)
                 .where(
+                        todo.user.id.eq(userId),
                         weatherEq(weather),
                         startDateGoe(startDate),
                         endDateLoe(endDate)
@@ -75,5 +77,26 @@ public class TodoRepositoryQueryDslImpl implements TodoRepositoryQueryDsl {
 
     private BooleanExpression endDateLoe(LocalDateTime endDate) {
         return endDate != null ? QTodo.todo.modifiedAt.loe(endDate) : null;
+    }
+
+    @Override
+    public Page<Todo> findAllByUserIdOrderByModifiedAtDesc(Long userId, Pageable pageable) {
+        QTodo todo = QTodo.todo;
+
+        List<Todo> results = queryFactory
+                .selectFrom(todo)
+                .where(todo.user.id.eq(userId)) // userId 필터 추가
+                .orderBy(todo.modifiedAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .select(todo.count())
+                .from(todo)
+                .where(todo.user.id.eq(userId))
+                .fetchOne();
+
+        return PageableExecutionUtils.getPage(results, pageable, () -> total);
     }
 }

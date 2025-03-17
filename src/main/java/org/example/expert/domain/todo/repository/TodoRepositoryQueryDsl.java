@@ -13,5 +13,7 @@ QueryDSL을 사용할 메서드를 정의
 public interface TodoRepositoryQueryDsl {
     Optional<Todo> findByIdWithUser(Long todoId);
 
-    Page<Todo> searchTodos(String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<Todo> searchTodos(Long userId, String weather, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<Todo> findAllByUserIdOrderByModifiedAtDesc(Long userId, Pageable pageable);
+
 }

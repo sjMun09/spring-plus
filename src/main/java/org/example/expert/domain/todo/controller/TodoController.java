@@ -2,6 +2,7 @@ package org.example.expert.domain.todo.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.InvalidRequestException;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class TodoController {
 
     private final TodoService todoService;
@@ -28,21 +30,23 @@ public class TodoController {
             @Auth AuthUser authUser,
             @Valid @RequestBody TodoSaveRequest todoSaveRequest
     ) {
+        log.debug("TodoController : {}",authUser);
         return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
     }
 
     // 참고해서 검색 부분 구현.
     @GetMapping("/todos")
     public ResponseEntity<Page<TodoResponse>> getTodos(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @Auth AuthUser authUser,
+            @RequestParam(name ="page",defaultValue = "1") int page,
+            @RequestParam(name = "size",defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(todoService.getTodos(page, size));
+        return ResponseEntity.ok(todoService.getTodos(authUser.getId(), page, size));
     }
 
     @GetMapping("/todos/{todoId}")
-    public ResponseEntity<TodoResponse> getTodo(@PathVariable long todoId) {
-        return ResponseEntity.ok(todoService.getTodo(todoId));
+    public ResponseEntity<TodoResponse> getTodo(@Auth AuthUser authUser,@PathVariable(name = "todoId") long todoId) {
+        return ResponseEntity.ok(todoService.getTodo(authUser.getId(), todoId));
     }
 
     /*
@@ -61,12 +65,13 @@ public class TodoController {
     // 검색
     @GetMapping("/todos/search")
     public ResponseEntity<Page<TodoResponse>> searchTodos(
+            @Auth AuthUser authUser,
             @RequestParam(required = false) String weather,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) LocalDateTime endDate,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(todoService.searchTodos(weather, startDate, endDate, page, size));
+        return ResponseEntity.ok(todoService.searchTodos(authUser.getId(), weather, startDate, endDate, page, size));
     }
 }
