@@ -13,6 +13,7 @@ import org.example.expert.domain.todo.service.TodoService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class TodoController {
 
     @PostMapping("/todos")
     public ResponseEntity<TodoSaveResponse> saveTodo(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody TodoSaveRequest todoSaveRequest
     ) {
         log.debug("TodoController : {}",authUser);
@@ -37,7 +38,7 @@ public class TodoController {
     // 참고해서 검색 부분 구현.
     @GetMapping("/todos")
     public ResponseEntity<Page<TodoResponse>> getTodos(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(name ="page",defaultValue = "1") int page,
             @RequestParam(name = "size",defaultValue = "10") int size
     ) {
@@ -45,7 +46,7 @@ public class TodoController {
     }
 
     @GetMapping("/todos/{todoId}")
-    public ResponseEntity<TodoResponse> getTodo(@Auth AuthUser authUser,@PathVariable(name = "todoId") long todoId) {
+    public ResponseEntity<TodoResponse> getTodo(@AuthenticationPrincipal AuthUser authUser,@PathVariable(name = "todoId") long todoId) {
         return ResponseEntity.ok(todoService.getTodo(authUser.getId(), todoId));
     }
 
@@ -65,7 +66,7 @@ public class TodoController {
     // 검색
     @GetMapping("/todos/search")
     public ResponseEntity<Page<TodoResponse>> searchTodos(
-            @Auth AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(required = false) String weather,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) LocalDateTime endDate,
